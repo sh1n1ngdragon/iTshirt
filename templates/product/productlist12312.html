@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+
+<!-- 사용자 CSS 추가 -->
+<th:block layout:fragment="css">
+  <style>
+
+      .container {
+          width: 80%;
+          margin: 0 auto;
+      }
+      .product-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+      }
+      .product-item {
+          width: 250px;
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+      }
+      .product-item img {
+          width: 100%;
+          height: auto;
+      }
+      .loading {
+          text-align: center;
+          font-size: 18px;
+          margin: 20px 0;
+      }
+  </style>
+</th:block>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div layout:fragment="content">
+
+
+
+<div class="container">
+  <h1>여행용품</h1>
+  <div class="product-list" id="productList"></div>
+  <div class="loading" id="loading">Loading...</div>
+</div>
+
+<script>
+  let page = 0;
+  let isLoading = false;
+
+  function loadProducts() {
+      if (isLoading) return;
+      isLoading = true;
+      $("#loading").show();
+
+      $.ajax({
+          url: "/products/api",
+          type: "GET",
+          data: { page: page, size: 10 },
+          success: function(products) {
+              if (products.length > 0) {
+                  products.forEach(product => {
+                      $("#productList").append(`
+                          <div class="product-item">
+                              <a href="${product.url}" target="_blank">
+                                  <img src="${product.image}" alt="${product.subject}">
+                                  <h3>${product.subject}</h3>
+                              </a>
+                              <p>${product.price}원</p>
+                          </div>
+                      `);
+                  });
+                  page++;
+                  isLoading = false;
+              } else {
+                  $("#loading").text("No more products.");
+              }
+          },
+          error: function() {
+              console.log("Error loading products.");
+              $("#loading").text("Failed to load products.");
+          }
+      });
+  }
+
+  $(document).ready(function() {
+      loadProducts(); // 초기 데이터 로드
+
+      $(window).scroll(function() {
+          if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+              loadProducts();
+          }
+      });
+  });
+</script>
+</div>
+</body>
+</html>

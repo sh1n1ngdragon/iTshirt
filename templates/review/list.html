@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<th:block layout:fragment="script">
+
+</th:block>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <title>여행 후기</title>
+
+
+        <style>
+        /* 전체 컨테이너 스타일 수정 */
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;  /* 중앙 정렬 */
+            padding: 40px 20px;
+        }
+
+        /* 테이블 컨테이너 */
+        .table-container {
+            width: 100%;
+            margin: 0 auto;  /* 중앙 정렬 */
+            overflow-x: auto;  /* 필요시 가로 스크롤 */
+        }
+
+        /* 타이틀 스타일 개선 */
+        h1.text-center {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 40px;
+            font-weight: 600;
+        }
+
+        h1.text-center a {
+            text-decoration: none;
+            color: #333;
+            transition: color 0.3s ease;
+        }
+
+        h1.text-center a:hover {
+            color: #d94e20;
+        }
+
+        /* 테이블 스타일 개선 */
+        table {
+            width: 100%;
+            margin: 0 auto;  /* 중앙 정렬 */
+            border-collapse: separate;
+            border-spacing: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        thead th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            padding: 15px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody td {
+            padding: 15px;
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 제목 열 스타일 */
+        table tbody td:nth-child(2) {
+            min-width: 500px;
+            text-align: left;
+            padding-left: 20px;
+        }
+
+        table tbody td:nth-child(2) a {
+            color: #333;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        table tbody td:nth-child(2) a:hover {
+            color: #d94e20;
+        }
+
+        /* 좋아요와 조회수 스타일 */
+        .like-count, .view-count {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .like-count i {
+            color: #ff4757;
+        }
+
+        .view-count i {
+            color: #37474F;
+        }
+
+        /* 작성 버튼 스타일 수정 */
+        .opti {
+            display: flex;
+            justify-content: flex-end;
+            margin: 30px auto;  /* 중앙 정렬 */
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .opti button {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            background-color: #37474F;  /* 기본 색상 통일 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .opti button:hover {
+            background-color: #d37b00;  /* hover 색상 통일 */
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+        }
+
+        /* 페이지네이션 스타일 개선 */
+        .pagination {
+            display: flex;
+            justify-content: center;  /* 중앙 정렬 */
+            margin-top: 40px;
+            gap: 8px;
+        }
+
+        .pagination a {
+            padding: 10px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            color: #495057;
+            font-weight: 500;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .pagination a:hover {
+            background-color: #f8f9fa;
+            border-color: #d94e20;
+            color: #d94e20;
+        }
+
+        .pagination a.active {
+            background-color: #d94e20;
+            border-color: #d94e20;
+            color: white;
+        }
+
+.pagination .prev,
+.pagination .next {
+    font-weight: bold;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .content-container {
+        padding: 20px 10px;
+    }
+}
+    </style>
+
+  </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="content-container">
+        <h1 class="text-center"><a href="#">여행 후기</a></h1>
+        <div class="table-container">
+            <table class="table table-hover table-striped text-center">
+                <thead>
+                <tr>
+                   <!-- <th>번호</th>-->
+                    <th>작성자</th>
+                    <th>제목</th>
+                    <th>좋아요</th>
+                    <th>조회수</th>
+                    <th>등록일</th>
+                </tr>
+                </thead>
+                <tbody>
+            
+          
+            
+            <tr th:each="post : ${posts}">
+                <!-- 작성자 -->
+                <td th:text="${post.name}">
+
+                </td>
+
+                <!-- 제목 -->
+                <td>
+                    <a th:href="@{/review/{id}(id=${post.number})}" th:text="${post.subject}"></a>
+                </td>
+        
+                <!-- 좋아요 -->
+                <td>
+                    <span class="like-count">
+                        <i class="fas fa-heart"></i>
+                        <span th:text="${post.likeCount}"></span>
+                    </span>
+                </td>
+        
+                <!-- 조회수 -->
+                <td>
+                    <span class="view-count">
+                        <i class="fas fa-eye"></i>
+                        <span th:text="${post.readCount}"></span>
+                    </span>
+                </td>
+        
+                <!-- 등록일 -->
+                <td th:text="${T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd HH:mm:ss').format(post.regTime)}"></td>
+            </tr>
+
+<tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="opti">
+            <button onclick="location.href='/review/write'" sec:authorize="isAuthenticated()">작성</button>
+        </div>
+        <div class="pagination">
+            <a href="#" class="prev" th:if="${currentPage > 1}" th:href="@{/review?page=${currentPage - 1}}">이전</a>
+            <span th:each="page : ${pageNumbers}">
+                <a th:href="@{/review?page=${page}}" th:text="${page}" th:classappend="${page == currentPage} ? 'active' : ''"></a>
+            </span>
+            <a href="#" class="next" th:if="${currentPage < totalPages}" th:href="@{/review?page=${currentPage + 1}}">다음</a>
+        </div>
+    </div>
+</div>
+
+</body>
+
+  <script>
+
+//게시글 작성
+      function createPost() {
+       const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+       const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+       const postData = {
+           subject: document.getElementById("subject").value,
+           content: document.getElementById("content").value,
+           name: document.getElementById("name").value
+           password: document.getElementById("password").value
+       };
+
+       fetch("/review/write", {
+           method: "POST",
+           headers: {
+               "Content-Type": "application/json",
+               [csrfHeader]: csrfToken // CSRF 토큰 추가
+           },
+           body: JSON.stringify(postData)
+       })
+       .then(response => {
+           if (response.ok) {
+               alert("게시글이 등록되었습니다.");
+               window.location.reload();
+           } else {
+               throw new Error("게시글 등록 실패");
+           }
+       })
+       .catch(error => console.error("Error:", error));
+   }
+
+
+
+
+  </script>
+</div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.iamport.kr/js/iamport.payment-1.2.0.js"></script>
+
+    <title>결제 페이지</title>
+</head>
+<th:block layout:fragment="script">
+<script th:inline="javascript">
+
+    function processPayment() {
+      var token = $("meta[name='_csrf']").attr("content");
+      var header = $("meta[name='_csrf_header']").attr("content");
+
+      var productName = $("#productName").val();
+      var count = parseInt($("#count").val(), 10) || 1;
+      var price = parseInt($("#price").val(), 10) || 0;
+      var totalPrice = price * count;
+
+      // ✅ 디버깅 로그
+      console.log("📌 상품명:", productName);
+      console.log("📌 구매 수량:", count);
+      console.log("📌 총 결제 금액:", totalPrice);
+
+      // ✅ 유효성 검사
+      if (!productName || productName.trim() === "") {
+          alert("상품명이 올바르지 않습니다.");
+          return;
+      }
+      if (isNaN(count) || count <= 0) {
+          alert("수량은 1개 이상이어야 합니다.");
+          return;
+      }
+      if (isNaN(totalPrice) || totalPrice <= 0) {
+          alert("총 결제 금액이 올바르지 않습니다.");
+          return;
+      }
+
+      var IMP = window.IMP;
+      IMP.init('imp42785767'); // ✅ 아임포트 가맹점 코드
+
+      IMP.request_pay({
+          pg: "kakaopay.TC0ONETIME",
+          merchant_uid: 'order_' + new Date().getTime(), // ✅ 주문 고유번호 생성
+          name: productName,
+          amount: totalPrice,
+          buyer_email: 'test@example.com',  // ✅ 예제용 이메일
+          buyer_name: '구매자 이름',       // ✅ 구매자 이름
+          buyer_tel: '010-1234-5678'       // ✅ 구매자 전화번호
+      }, function (rsp) {
+          if (rsp.success) {
+              var orderData = {
+                  impUid: rsp.imp_uid,        // ✅ 결제 고유번호
+                  merchantUid: rsp.merchant_uid, // ✅ 가맹점 주문번호
+                  productName: productName, // ✅ 상품명
+                  quantity: count,         // ✅ 구매 수량
+                  totalPrice: totalPrice   // ✅ 총 결제 금액
+              };
+
+              console.log("📌 서버로 보낼 주문 데이터:", orderData);
+
+              $.ajax({
+                  url: "/buy",
+                  type: "POST",
+                  contentType: "application/json",
+                  data: JSON.stringify(orderData),
+                  beforeSend: function (xhr) {
+                      xhr.setRequestHeader(header, token);
+                  },
+                  success: function (response) {
+                      alert("결제가 완료되었습니다! 주문 번호: " + response);
+                      location.href = '/';
+                  },
+                  error: function (jqXHR) {
+                      alert("주문 처리 중 오류가 발생했습니다: " + jqXHR.responseText);
+                  }
+              });
+          } else {
+              alert("결제 실패: " + rsp.error_msg);
+          }
+      });
+  }
+
+
+
+</script>
+</th:block>
+
+<div layout:fragment="content">
+<h2>결제 페이지</h2>
+
+<p>상품명: <span th:text="${productName}"></span></p> <!-- ✅ 상품명 추가 -->
+<p>상품 ID: <span th:text="${productId}"></span></p>
+<p>구매 수량: <span th:text="${count}"></span> 개</p>
+<p>총 결제 금액: <span th:text="${totalPrice}"></span> 원</p>
+
+<!-- 실제 결제 처리 버튼 -->
+<button onclick="processPayment()">결제하기</button>
+    <!-- ✅ product 객체가 전달되는지 확인 -->
+    <p th:if="${product != null}">상품 데이터가 존재합니다.</p>
+    <p th:unless="${product != null}">❌ 상품 데이터가 없습니다!</p>
+
+    <!-- ✅ 개별 필드 값 확인 -->
+
+    <!-- 🔍 디버깅용 (값이 안 나오는 경우 '값 없음' 표시) -->
+    <p>🔍 `productId`: <span th:text="${productId != null ? productId : '값 없음'}"></span></p>
+    <p>🔍 `productName`: <span th:text="${productName != null ? productName : '값 없음'}"></span></p>
+    <p>🔍 `count`: <span th:text="${count != null ? count : '값 없음'}"></span></p>
+    <p>🔍 `totalPrice`: <span th:text="${totalPrice != null ? totalPrice : '값 없음'}"></span></p>
+
+
+</div>
+
+</html>

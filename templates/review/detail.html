@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <th:block layout:fragment="head">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="_csrf" th:content="${_csrf.token}" />
+        <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+        <title>리뷰 상세</title>
+
+        <style>
+            /* Global Styles */
+            body {
+                font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f8f9fa;
+                color: #212529;
+                line-height: 1.6;
+            }
+
+            /* Title Styling */
+            h1.text-center {
+                text-align: center;
+                font-size: 2rem;
+                margin: 40px 0 30px;
+                color: #1a1a1a;
+                font-weight: 700;
+            }
+
+            h1.text-center a {
+                color: #1a1a1a;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+            h1.text-center a:hover {
+                color: #0056b3;
+            }
+
+            /* Card Container */
+            .write {
+                max-width: 1000px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            }
+
+            /* Table Styling */
+            table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                margin-bottom: 30px;
+            }
+
+            table th,
+            table td {
+                padding: 20px;
+                text-align: left;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            table thead th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+                color: #495057;
+                font-size: 1.1rem;
+            }
+
+            table tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+            /* 내용이 긴 경우 단어 단위로 줄바꿈 */
+            table tbody td {
+                word-break: break-all;
+                line-height: 1.8;
+            }
+
+            /* 버튼 컨테이너 */
+            .opti {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 15px;
+                margin-top: 30px;
+            }
+
+            .opti-bottom {
+                display: flex;
+                gap: 12px;
+            }
+
+            /* 공통 버튼 스타일 */
+            .common-btn {
+                padding: 12px 24px;
+                font-size: 0.95rem;
+                color: #ffffff;
+                background-color: #37474F;
+                border: none;
+                border-radius: 6px;
+                text-align: center;
+                text-decoration: none;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: 500;
+                min-width: 100px;
+            }
+
+            .common-btn:hover {
+                background-color: #d37b00;
+                transform: translateY(-2px);
+                box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+            }
+
+            /* 본문 */
+            .detail-content {
+                min-width: 700px;
+                min-height: 300px;
+                padding: 30px;
+                background-color: #fff;
+                border-radius: 8px;
+                border: 1px solid #dee2e6;
+                margin-bottom: 30px;
+                line-height: 1.8;
+            }
+
+            /* 좋아요 버튼 */
+            .like-btn {
+                background: none;
+                border: none;
+                cursor: pointer;
+                padding: 8px 16px;
+                border-radius: 20px;
+                color: #ff4757;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 0.95rem;
+                min-width: 100px;
+                justify-content: center;
+                position: relative;
+            }
+
+            .like-btn i {
+                font-size: 2rem;
+                position: relative;
+                color: #ff4757;
+            }
+
+            .like-btn span {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 0.9rem;
+                color: #ff4757;
+                font-weight: bold;
+            }
+
+            .like-btn:hover {
+                transform: translateY(-2px);
+            }
+
+            .like-btn:hover i {
+                animation: heartBeat 0.3s ease-in-out;
+            }
+
+            .like-btn.liked i {
+                color: #ff4757;
+            }
+
+            .like-btn:not(.liked) i {
+                color: #ff4757;
+                opacity: 0.5;
+            }
+
+            @keyframes heartBeat {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.2); }
+                100% { transform: scale(1); }
+            }
+
+            /* 조회수 표시 */
+            .view-count {
+                color: #666;
+                font-size: 0.9rem;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .view-count i {
+                color: #37474F;
+            }
+
+            /* 댓글 영역 */
+            .detail-comments {
+                margin-top: 40px;
+                padding: 30px;
+                background-color: #f8f9fa;
+                border-radius: 8px;
+            }
+
+            .detail-comments h3 {
+                margin-bottom: 20px;
+                color: #333;
+                font-size: 1.2rem;
+            }
+
+            .comment-input {
+                width: 100%;
+                padding: 15px;
+                border: 1px solid #dee2e6;
+                border-radius: 5px;
+                margin-bottom: 15px;
+                resize: vertical;
+                min-height: 100px;
+                font-size: 1rem;
+            }
+
+            /* 댓글 버튼 스타일 수정 */
+            .comment-btn {
+                background-color: #37474F !important;
+                color: white !important;
+                padding: 12px 24px !important;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 1rem;
+                width: auto;
+                float: right;
+            }
+
+            .comment-btn:hover {
+                background-color: #d37b00 !important;
+                transform: translateY(-2px);
+                box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+            }
+
+            /* 반응형 디자인 */
+            @media (max-width: 768px) {
+                .write {
+                    padding: 20px;
+                    margin: 10px;
+                }
+
+                table th,
+                table td {
+                    padding: 15px;
+                }
+
+                .opti-bottom {
+                    flex-direction: column;
+                }
+
+                .common-btn,
+                .like-btn {
+                    width: 100%;
+                }
+
+                .detail-comments {
+                    padding: 20px;
+                }
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="write">
+        <h1 class="text-center"><a href="/review/list">여행후기</a></h1>
+        <table>
+            <thead>
+            <tr>
+                <td colspan="2">
+                    <span class="op">여행 후기</span>
+                    <span th:text="${post.subject}"></span>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    <span class="op">작성자:</span>
+                    <span th:text="${post.name}"></span>
+                </td>
+                <td>
+                    <span class="op">등록일:</span>
+                    <span th:text="${T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd HH:mm:ss').format(post.regTime)}"></span>
+                </td>
+                <td>
+                    <span class="view-count">조회수
+                        <i class="fas fa-eye"></i>
+                        <span th:text="${post.readCount}"></span>
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="detail-content" th:text="${post.content}"></div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 버튼 -->
+        <div class="opti">
+            <button class="like-btn" th:classappend="${post.liked ? 'liked' : ''}" th:onclick="'incrementLike(' + ${post.number} + ')'">
+                <i th:class="${post.liked ? 'fas fa-heart' : 'far fa-heart'}"></i>
+                <span th:text="${post.likeCount}"></span>
+            </button>
+            <div class="opti-bottom">
+                <a th:href="@{/review/edit/{id}(id=${post.number})}" class="common-btn" sec:authorize="isAuthenticated()">수정</a>
+                <button th:onclick="'deletePost(' + ${post.number} + ')'" class="common-btn" sec:authorize="isAuthenticated()">삭제</button>
+                <a th:href="@{/review/list}" class="common-btn">목록으로</a>
+            </div>
+        </div>
+
+        <!-- 댓글 -->
+        <div class="detail-comments">
+            <h3>댓글</h3>
+            <textarea class="comment-input" placeholder="댓글을 입력하세요..."></textarea>
+            <button class="comment-btn">댓글 작성</button>
+            <div class="comment-list">
+                <!-- 댓글 목록이 여기에 동적으로 추가될 예정 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deletePost(postNumber) {
+            if (!postNumber || postNumber <= 0) {
+                alert("게시글 번호가 유효하지 않습니다.");
+                return;
+            }
+
+            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+            const password = prompt("비밀번호를 입력하세요:");
+            if (!password) return;
+
+            fetch(`/review/${postNumber}/verify`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", [csrfHeader]: csrfToken },
+                body: JSON.stringify({ password })
+            })
+            .then(response => response.ok ? fetch(`/review/${postNumber}`, { method: "DELETE", headers: { [csrfHeader]: csrfToken } }) : alert("비밀번호가 일치하지 않습니다."))
+            .then(() => { alert("게시글이 삭제되었습니다."); window.location.href = "/review/list"; })
+            .catch(error => alert(error.message));
+        }
+
+        function incrementLike(postNumber) {
+            const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+            const likeBtn = document.querySelector('.like-btn');
+
+            fetch(`/review/${postNumber}/like`, {
+                method: "POST",
+                headers: { [csrfHeader]: csrfToken }
+            })
+            .then(response => {
+                if (response.ok) {
+                    const likeCount = likeBtn.querySelector('span');
+                    const currentCount = parseInt(likeCount.textContent);
+                    const isLiked = likeBtn.classList.contains('liked');
+                    
+                    likeBtn.classList.toggle('liked');
+                    likeCount.textContent = isLiked ? currentCount - 1 : currentCount + 1;
+                } else {
+                    alert("좋아요 처리 중 오류가 발생했습니다.");
+                }
+            })
+            .catch(error => alert(error.message));
+        }
+    </script>
+</div>
+</body>
+</html>

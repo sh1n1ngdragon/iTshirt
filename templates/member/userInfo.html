@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        /* Title Styling */
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin: 40px 0 30px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        /* Card Container */
+        .info {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* User Info Styling */
+        #user-info {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+
+        #user-info p {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 1.1rem;
+            color: #495057;
+        }
+
+        #user-info p:last-child {
+            border-bottom: none;
+        }
+
+        #user-info span {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-left: 10px;
+        }
+
+        /* Button Container */
+        #actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        /* Common Button Style */
+        .common-btn {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background-color: #37474F;
+            border: none;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .common-btn:hover {
+            background-color: #d37b00;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .info {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            #actions {
+                flex-direction: column;
+            }
+
+            .common-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="info">
+        <h1>마이페이지</h1>
+        <div id="user-info">
+            <p>ID: <span id="user-email"></span></p>
+            <p>이름: <span id="user-name"></span></p>
+            <p>등급: <span id="user-role"></span></p>
+            <p>Point: <span id="user-point"></span></p>
+            <p>연락처: <span id="user-phone"></span></p>
+            <p>주소: <span id="user-address"></span></p>
+            <p>가입일: <span id="user-reg-date"></span></p>
+        </div>
+        <div id="actions">
+            <a href="/members/update" class="common-btn">회원 정보 수정</a>
+          
+        </div>
+    </div>
+
+<script>
+    $(document).ready(function(){
+        $.ajax({
+            url: '/members/user-info',
+            method: 'GET',
+            success: function(data) {
+                $('#user-email').text(data.email);
+                $('#user-name').text(data.name);
+                $('#user-role').text(data.role);
+                $('#user-point').text(data.point + ' P');
+                $('#user-phone').text(data.phone);
+                $('#user-address').text(data.address);
+                $('#user-reg-date').text(data.regDate);
+            },
+            error: function(err) {
+                console.error("사용자 정보를 불러오는데 실패했습니다.", err);
+                alert("사용자 정보를 불러오는데 실패했습니다.");
+            }
+        });
+    });
+</script>
+</div>
+</body>
+</html>

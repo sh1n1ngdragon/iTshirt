@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>게시글 수정</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        /* Title Styling */
+        h1.text-center {
+            text-align: center;
+            font-size: 2rem;
+            margin: 40px 0 30px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        h1.text-center a {
+            color: #1a1a1a;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        h1.text-center a:hover {
+            color: #0056b3;
+        }
+
+        /* Form Container */
+        .write {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #37474F;
+            box-shadow: 0 0 0 2px rgba(55, 71, 79, 0.1);
+        }
+
+        textarea {
+            min-height: 300px;
+            resize: vertical;
+        }
+
+        /* Button Styling */
+        .btn-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .common-btn {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background-color: #37474F;
+            border: none;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .common-btn:hover {
+            background-color: #d37b00;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .write {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .btn-container {
+                flex-direction: column;
+            }
+
+            .common-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="write">
+        <h1 class="text-center"><a href="/board/list">공지사항</a></h1>
+        <form th:action="@{/board/edit/{id}(id=${post.number})}" method="post">
+            <input type="hidden" id="number" th:value="${post.number}"/>
+            
+            <div class="form-group">
+                <label for="subject">제목</label>
+                <input type="text" id="subject" th:value="${post.subject}"/>
+            </div>
+
+            <div class="form-group">
+                <label for="name">작성자</label>
+                <input type="text" id="name" th:value="${post.name}" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password"/>
+            </div>
+
+            <div class="form-group">
+                <label for="content">내용</label>
+                <textarea id="content" th:text="${post.content}"></textarea>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="common-btn" onclick="updatePost()">수정</button>
+                <a href="/board/list" class="common-btn">목록으로</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updatePost() {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+        const postNumber = document.getElementById("number").value;
+
+        const postData = {
+            subject: document.getElementById("subject").value,
+            content: document.getElementById("content").value,
+            name: document.getElementById("name").value,
+            password: document.getElementById("password").value
+        };
+
+        fetch(`/board/${postNumber}/edit`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify(postData)
+        })
+        .then(response => {
+            if (response.ok) {
+                alert("게시글이 수정되었습니다.");
+                window.location.href = "/board/list";
+            } else if (response.status === 401) {
+                alert("비밀번호가 일치하지 않습니다.");
+            } else {
+                throw new Error("게시글 수정 실패");
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    }
+</script>
+</body>
+</html>

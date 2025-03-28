@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}" />
+    <meta name="_csrf_header" th:content="${_csrf.headerName}" />
+    <title>게시글 상세</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        /* Title Styling */
+        h1.text-center {
+            text-align: center;
+            font-size: 2rem;
+            margin: 40px 0 30px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        h1.text-center a {
+            color: #1a1a1a;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        h1.text-center a:hover {
+            color: #0056b3;
+        }
+
+        /* Card Container */
+        .write {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 30px;
+        }
+
+        table th,
+        table td {
+            padding: 20px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        table thead th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* 내용이 긴 경우 단어 단위로 줄바꿈 */
+        table tbody td {
+            word-break: break-all;
+            line-height: 1.8;
+        }
+
+        /* 버튼 컨테이너 */
+        .opti {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        /* 공통 버튼 스타일 */
+        .common-btn {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background-color: #37474F;
+            border: none;
+            border-radius: 6px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .common-btn:hover {
+            background-color: #d37b00;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+        }
+
+        /* 레이블 스타일 */
+        .op {
+            font-weight: 600;
+            color: #495057;
+            margin-right: 8px;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .write {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            table th,
+            table td {
+                padding: 15px;
+            }
+
+            .opti {
+                flex-direction: column;
+            }
+
+            .common-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="write">
+        <h1 class="text-center"><a href="/board/list">공지사항</a></h1>
+        <table>
+            <thead>
+            <tr>
+                <td colspan="2">
+                    <span class="op">공지사항</span>
+                    <span th:text="${post.subject}"></span>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr>
+                <td>
+                    <span class="op">관리자</span>
+
+                </td>
+                <td>
+                    <span class="op">작성일:</span>
+                    <span th:text="${T(java.time.format.DateTimeFormatter).ofPattern('yyyy-MM-dd HH:mm:ss').format(post.regTime)}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="op"></span>
+                    <div th:text="${post.content}"></div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="opti">
+            <a th:href="@{/board/edit/{id}(id=${post.number})}" class="common-btn" sec:authorize="hasRole('ADMIN')">수정</a>
+            <button th:onclick="deletePost([[${post.number} ?: 0]])" class="common-btn" sec:authorize="hasRole('ADMIN')">삭제</button>
+            <a th:href="@{/board/list}" class="common-btn">목록으로</a>
+        </div>
+    </div>
+    <th:block layout:fragment="script">
+        <script>
+            console.log("postNumber (from Thymeleaf):", postNumber);
+            const postNumber = [[${post.number} ?: 0]];
+            console.log("postNumber:", postNumber);
+
+            function deletePost(postNumber) {
+              console.log("Received postNumber:", postNumber);
+              if (!postNumber || postNumber === 0) {
+                  alert("게시글 번호가 유효하지 않습니다.");
+                  return;
+              }
+
+              const csrfMeta = document.querySelector('meta[name="_csrf"]');
+              const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+
+              if (!csrfMeta || !csrfHeaderMeta) {
+                  alert("CSRF 토큰이 설정되지 않았습니다.");
+                  return;
+              }
+
+              const csrfToken = csrfMeta.content;
+              const csrfHeader = csrfHeaderMeta.content;
+
+              const password = prompt("비밀번호를 입력하세요:");
+              if (!password) return;
+
+              fetch(`/board/${postNumber}/verify`, {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json",
+                      [csrfHeader]: csrfToken
+                  },
+                  body: JSON.stringify({ password })
+              })
+              .then(response => {
+                  if (response.ok) {
+                      return fetch(`/board/${postNumber}`, {
+                          method: "DELETE",
+                          headers: {
+                              [csrfHeader]: csrfToken
+                          }
+                      });
+                  } else {
+                      alert("비밀번호가 일치하지 않습니다.");
+                      throw new Error("Unauthorized");
+                  }
+              })
+              .then(response => {
+                  if (response.ok) {
+                      alert("게시글이 삭제되었습니다.");
+                      window.location.href = "/board/list";
+                  } else {
+                      throw new Error("게시글 삭제 실패");
+                  }
+              })
+              .catch(error => console.error("Error:", error));
+            }
+
+            window.onload = function() {
+              const postId = /* 게시글 ID를 가져오는 로직 */;
+              const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+              const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+              fetch(`/board/${postId}/read`, {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      [csrfHeader]: csrfToken
+                  }
+              })
+              .then(response => {
+                  if (!response.ok) {
+                      console.error("조회수 증가 실패");
+                  }
+              })
+              .catch(error => console.error('Error:', error));
+            }
+        </script>
+    </th:block>
+</div>
+</body>
+</html>

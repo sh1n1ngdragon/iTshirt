@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+    <title>이벤트 목록</title>
+
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        /* Title Styling */
+        h1.text-center {
+            text-align: center;
+            font-size: 2rem;
+            margin: 40px 0 30px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        h1.text-center a {
+            color: #1a1a1a;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        h1.text-center a:hover {
+            color: #0056b3;
+        }
+
+        /* Table Container */
+        .table-container {
+            max-width: 1000px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 30px;
+        }
+
+        table thead th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        table tbody td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        table tbody td:nth-child(2) {
+            text-align: left;
+            min-width: 400px;
+        }
+
+        table tbody td a {
+            color: #212529;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        table tbody td a:hover {
+            color: #0056b3;
+        }
+
+        /* Button Container */
+        .opti {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Button Style */
+        .opti button {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background-color: #0056b3;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .opti button:hover {
+            background-color: #004494;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin: 30px 0;
+        }
+
+        .pagination a {
+            display: inline-block;
+            padding: 8px 16px;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #495057;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .pagination a:hover {
+            background-color: #f8f9fa;
+            border-color: #0056b3;
+            color: #0056b3;
+        }
+
+        .pagination a.active {
+            background-color: #0056b3;
+            color: #ffffff;
+            border-color: #0056b3;
+            font-weight: 500;
+        }
+
+        .pagination .prev,
+        .pagination .next {
+            font-weight: 500;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .table-container {
+                padding: 15px;
+                margin: 10px;
+            }
+
+            table tbody td:nth-child(2) {
+                min-width: 200px;
+            }
+
+            .opti {
+                position: static;
+                margin-top: 20px;
+            }
+
+            .opti button {
+                width: 100%;
+            }
+        }
+    </style>
+
+</head>
+<body>
+
+<div layout:fragment="content">
+    <h1 class="text-center"><a href="#">이벤트</a></h1>
+    <div class="table-container">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>등록일</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="post, iterStat : ${posts}">
+                <td th:text="${iterStat.count}"></td>
+                <td>
+                    <a th:href="@{/event/{id}(id=${post.id})}" th:text="${post.title}"></a>
+                </td>
+                <td th:text="${#temporals.format(post.regTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 이벤트 작성 버튼 (관리자만 보이도록 설정) -->
+        <div class="opti">
+            <button onclick="location.href='/event/new'" sec:authorize="hasRole('ADMIN')">새 이벤트 작성</button>
+        </div>
+    </div>
+
+    <!-- 페이징 처리 -->
+    <div class="pagination">
+        <a th:if="${currentPage > 1}" th:href="@{/event?page=${currentPage - 1}}" class="prev">이전</a>
+        <span th:each="page : ${pageNumbers}">
+            <a th:href="@{/event?page=${page}}" th:text="${page}" th:classappend="${page == currentPage} ? 'active' : ''"></a>
+        </span>
+        <a th:if="${currentPage < totalPages}" th:href="@{/event?page=${currentPage + 1}}" class="next">다음</a>
+    </div>
+
+</div>
+
+</body>
+</html>

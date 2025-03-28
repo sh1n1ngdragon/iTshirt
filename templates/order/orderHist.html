@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+<head>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</head>
+<th:block layout:fragment="script">
+
+  <script th:inline="javascript">
+
+    function cancelOrder(orderId){
+    var token=$("meta[name='_csrf']").attr("content");
+    var header = $("meta[name='_csrf_header']").attr("content");
+
+    var url ="/order/"+orderId+"/cancel";
+    var paramData={orderId : orderId,}
+
+var param= JSON.stringify(paramData);
+
+    $.ajax({
+    url:url,
+    type:"POST",
+    contentType : "application/json",
+    data : param,
+    beforeSend : function(xhr){
+    /* 데이터 전송하기 전에 헤더의 csrf 값을 설정*/
+
+    xhr.setRequestHeader(header,token);
+    },
+
+    dataType :"json",
+    cache : false,
+    success: function (result,status){
+    alert("주문이 취소 되었습니다.");
+    location.href='/orders/'+[[${page}]];
+    },
+    error: function(jqXHR, status, error){
+    if(jqXHR.status == '401'){
+    alert('로그인 후 이용해주세요.');
+    location.href='/members/login';
+    }
+    else{
+    alert(jqXHR.responseText);
+          }
+
+        }
+
+      });
+    }
+
+  </script>
+
+
+
+</th:block>
+
+
+<th:block layout:fragment="css">
+  <style>
+    /* 전체 컨테이너 */
+    .content-mg {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+        width: 80%;
+    }
+
+    /* 페이지 제목 */
+    .mb-4 {
+        color: #37474F;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #37474F;
+    }
+
+    /* 주문 날짜 영역 */
+    .d-flex.mb-3.align-self-center {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .d-flex h4 {
+        margin: 0;
+        color: #37474F;
+        font-size: 1.2rem;
+    }
+
+    /* 주문 취소 버튼 */
+    .btn-outline-secondary {
+        background-color: #37474F;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #d37b00;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+    }
+
+    /* 주문 카드 */
+    .card {
+        background: white;
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    /* 상품 이미지 */
+    .repImgDiv {
+        width: 100px;
+        height: 100px;
+        margin: 0 15px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .repImg {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .repImg:hover {
+        transform: scale(1.05);
+    }
+
+    /* 상품 정보 */
+    .align-self-center {
+        padding: 20px;
+    }
+
+    .fs24 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #37474F;
+        margin-bottom: 10px;
+    }
+
+    .fs18 {
+        font-size: 1rem;
+        color: #666;
+    }
+
+    /* 페이지네이션 */
+    .pagination {
+        margin-top: 40px;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .page-item .page-link {
+        color: #37474F;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        background-color: #f8f9fa;
+    }
+
+    .page-item.active .page-link {
+        background-color: #37474F;
+        border-color: #37474F;
+        color: white;
+    }
+
+    .page-item .page-link:hover {
+        background-color: #d37b00;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+    }
+
+    .page-item.disabled .page-link {
+        color: #6c757d;
+        pointer-events: none;
+        background-color: #f8f9fa;
+    }
+
+    .page-item.active {
+        font-weight: bold;
+    }
+
+    /* 취소 완료 텍스트 */
+    h4:not(.mb-4) {
+        color: #dc3545;
+        font-size: 1rem;
+        margin: 0;
+    }
+
+    /* 반응형 디자인 */
+    @media (max-width: 768px) {
+        .content-mg {
+            width: 95%;
+            padding: 0 10px;
+        }
+
+        .repImgDiv {
+            width: 80px;
+            height: 80px;
+            margin: 0 10px;
+        }
+
+        .fs24 {
+            font-size: 1rem;
+        }
+
+        .fs18 {
+            font-size: 0.9rem;
+        }
+
+        .d-flex.mb-3.align-self-center {
+            flex-direction: column;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .btn-outline-secondary {
+            width: 100%;
+        }
+    }
+  </style>
+</th:block>
+
+<div layout:fragment="content" class="content-mg">
+  <h2 class="mb-4">구매 이력</h2>
+  <div th:each="order : ${orders.getContent()}">
+    <div class="d-flex mb-3 align-self-center">
+      <h4 th:text="${order.orderDate} + '주문'"></h4>
+      <div class="ml-3">
+        <th:block th:if="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">
+          <button type="button" class="btn btn-outline-secondary" th:value="${order.orderId}"
+                  onclick="cancelOrder(this.value)">주문취소</button>
+        </th:block>
+        <th:block th:unless="${order.orderStatus == T(com.shop.constant.OrderStatus).ORDER}">
+          <h4>(취소 완료)</h4></th:block>
+      </div>
+    </div>
+
+    <div class="card d-flex">
+      <div th:each="orderItem : ${order.orderItemDtoList}" class="d-flex mb-3">
+        <div class="repImgDiv">
+          <img th:src="${orderItem.imgUrl}" class="rounded repImg" th:alt="${orderItem.itemNm}">
+        </div>
+        <div class="align-self-center w-75">
+          <span th:text="${orderItem.itemNm}" class="fs24 font-weight-bold"></span>
+          <div class="fs18 font-weight-light">
+            <span th:text="${orderItem.orderPrice} + '원'"></span>
+            <span th:text="${orderItem.count} + '개'"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div th:with="start=${(orders.number/maxPage)*maxPage +1},
+        end=(${(orders.totalPages == 0) ? 1: (start + (maxPage-1) < orders.totalPages ?
+        start + (maxPage - 1) : orders.totalPages)})">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${orders.number eq 0}? 'disabled' : ''">
+        <a th:href="@{'/orders/' + ${orders.number-1}}" aria-label="Previous" class="page-link">
+          <span aria-hidden="true">Previous</span>
+        </a>
+      </li>
+      <li class="page-item" th:each="page : ${#numbers.sequence(start,end)}"
+          th:classappend="${orders.number eq page-1}? 'active':''">
+        <a th:href="@{'/orders/' + ${page-1}}" th:inline="text" class="page-link">[[${page}]]</a>
+      </li>
+      <li class="page-item" th:classappend="${orders.number+1 ge orders.totalPages}? 'disabled':''">
+        <a th:href="@{'/orders/' +${orders.number+1}}" aria-label="Next" class="page-link">
+          <span aria-hidden="true">Next</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+</html>

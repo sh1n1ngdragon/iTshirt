@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원정보 수정</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #212529;
+            line-height: 1.6;
+        }
+
+        /* Title Styling */
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin: 40px 0 30px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        /* Form Container */
+        .form-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Form Styling */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #d37b00;
+            box-shadow: 0 0 0 2px rgba(211, 123, 0, 0.2);
+        }
+
+        /* Error Message */
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+
+        /* Button Container */
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 12px 24px;
+            font-size: 0.95rem;
+            color: #ffffff;
+            background-color: #37474F;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #d37b00;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(211, 123, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+
+        /* Help Text Styling */
+        .help-text {
+            color: #6c757d;
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+
+        /* Readonly Input Styling */
+        input[readonly] {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="form-container">
+        <h1>회원정보 수정</h1>
+        <form th:action="@{/members/update}" th:object="${memberFormDto}" method="post">
+            <div class="form-group">
+                <label for="email">이메일</label>
+                <input type="email" id="email" th:field="*{email}" readonly>
+                <div class="help-text">이메일은 아이디로 사용되므로 변경할 수 없습니다.</div>
+            </div>
+            <div class="form-group">
+                <label for="name">이름</label>
+                <input type="text" id="name" th:field="*{name}">
+                <div class="error-message" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+            </div>
+            <div class="form-group">
+                <label for="tel">연락처</label>
+                <input type="tel" id="tel" th:field="*{tel}">
+                <div class="error-message" th:if="${#fields.hasErrors('tel')}" th:errors="*{tel}"></div>
+            </div>
+            <div class="form-group">
+                <label for="address">주소</label>
+                <input type="text" id="address" th:field="*{address}">
+                <div class="error-message" th:if="${#fields.hasErrors('address')}" th:errors="*{address}"></div>
+            </div>
+            <div class="form-group">
+                <label for="password">새 비밀번호 (선택)</label>
+                <input type="password" id="password" th:field="*{password}" placeholder="변경 시에만 입력">
+                <div class="error-message" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+            </div>
+            <div class="form-group">
+                <label for="passwordConfirm">비밀번호 확인 (선택)</label>
+                <input type="password" id="passwordConfirm" th:field="*{passwordConfirm}" placeholder="변경 시에만 입력">
+                <div class="error-message" th:if="${#fields.hasErrors('passwordConfirm')}" th:errors="*{passwordConfirm}"></div>
+            </div>
+
+            <!-- 전역 에러 메시지 표시 -->
+            <div class="error-message" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+            <div class="button-container">
+                <a href="/members/mypage" class="btn btn-secondary">취소</a>
+                <button type="submit" class="btn">수정하기</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

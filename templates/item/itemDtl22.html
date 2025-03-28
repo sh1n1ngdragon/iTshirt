@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout1}">
+
+<head>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+</head>
+
+<th:block layout:fragment="script">
+    <script th:inline="javascript">
+        <!-- jQuery UI JS 추가 -->
+
+        $(document).ready(function(){
+            calculateTotalPrice();
+            $("#count").change(function(){
+                calculateTotalPrice();
+            });
+
+            // 서버에서 전달받은 checkinDate와 checkoutDate를 YYYY-MM-DD 형식으로 지정
+            var checkinDate = /*[[${#dates.format(checkinDate, 'yyyy-MM-dd')}]]*/ '2025-03-01';
+            var checkoutDate = /*[[${#dates.format(checkoutDate, 'yyyy-MM-dd')}]]*/ '2025-03-05';
+
+            // 달력 초기화 및 특정 날짜 하이라이트
+            $("#calendar").datepicker({
+                dateFormat: 'yy-mm-dd',
+                beforeShowDay: function(date) {
+                    var dateString = $.datepicker.formatDate('yy-mm-dd', date);
+                    if (dateString === checkinDate || dateString === checkoutDate) {
+                        return [true, "highlight-date", "Selected"];
+                    }
+                    return [true, "", ""];
+                }
+            });
+        });
+
+        function calculateTotalPrice(){
+            var count = $("#count").val();
+            var price = $("#price").val();
+            var totalPrice = price * count;
+            $("#totalPrice").html(totalPrice + '원');
+        }
+
+        function order() {
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            var url = "/order";
+            var paramData = {
+                itemId: $("#itemId").val(),
+                count: $("#count").val()
+            };
+
+            var param = JSON.stringify(paramData);
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json",
+                data: param,
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader(header, token);
+                },
+                dataType: "json",
+                cache: false,
+                success: function(result, status) {
+                    alert("주문이 완료 되었습니다.");
+                    location.href = '/';
+                },
+                error: function(jqXHR, status, error) {
+                    if (jqXHR.status == '401') {
+                        alert('로그인 후 이용해주세요.');
+                        location.href = '/members/login';
+                    } else {
+                        alert(jqXHR.responseText);
+                    }
+                }
+            });
+        }
+
+        function addCart(){
+            var token = $("meta[name='_csrf']").attr("content");
+            var header = $("meta[name='_csrf_header']").attr("content");
+
+            var url = "/cart";
+
+            var paramData = {
+                itemId: $("#itemId").val(),
+                count: $("#count").val()
+            };
+
+            var param = JSON.stringify(paramData);
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json",
+                data: param,
+                beforeSend: function(xhr){
+                    xhr.setRequestHeader(header, token);
+                },
+                dataType: "json",
+                cache: false,
+                success: function(result, status){
+                    alert("상품을 장바구니에 담았습니다.");
+                    location.href = '/';
+                },
+                error: function(jqXHR, status, error){
+                    if(jqXHR.status == '401'){
+                        alert('로그인 후 이용해주세요.');
+                        location.href = '/members/login';
+                    } else {
+                        alert(jqXHR.responseText);
+                    }
+                }
+            });
+        }
+    </script>
+</th:block>
+
+<th:block layout:fragment="css">
+    <style>
+        .mgb-15 {
+            margin-bottom: 15px;
+        }
+        .mgt-30 {
+            margin-top: 30px;
+        }
+        .mgt-50 {
+            margin-top: 50px;
+        }
+        /* 상품명 중앙 정렬 */
+        .product-name {
+            text-align: center;
+            margin: 30px 0;
+        }
+        /* Carousel 이미지: 최대 800px */
+        .carousel-item img {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        /* 가격 및 주문 영역 */
+        .price-section {
+            padding: 20px;
+        }
+    </style>
+</th:block>
+
+<div layout:fragment="content">
+    <input type="hidden" id="itemId" th:value="${item.id}">
+
+    <!-- 상품명 상단 배치 -->
+    <div class="product-name">
+        <h2 th:text="${item.itemNm}"></h2>
+    </div>
+
+    <!-- Carousel과 가격 영역 -->
+    <div class="row">
+        <!-- 이미지 슬라이드 (최대 5개) -->
+        <div class="col-md-8">
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <div th:each="itemImg, iterStat : ${item.itemImgDtoList}"
+                         class="carousel-item"
+                         th:classappend="${iterStat.index == 0} ? ' active'">
+                        <img th:if="${not #strings.isEmpty(itemImg.imgUrl)}"
+                             th:src="${itemImg.imgUrl}"
+                             class="d-block w-100" alt="상품 이미지">
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+        <!-- 가격 및 주문 정보 영역 -->
+        <div class="col-md-4 price-section">
+            <div class="text-end">
+                <span th:if="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="badge bg-primary mgb-15">판매중</span>
+                <span th:unless="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="badge bg-secondary mgb-15">품절</span>
+                <div class="h4 text-danger">
+                    <input type="hidden" th:value="${item.price}" id="price" name="price">
+                    <span th:text="${item.price}"></span>원
+                </div>
+                <div class="input-group w-75 mgb-15">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">수량</span>
+                    </div>
+                    <input type="number" name="count" id="count" class="form-control" value="1" min="1">
+                </div>
+                <div class="mgb-15 text-end">
+                    <h5>결제 금액</h5>
+                    <h3 id="totalPrice" class="font-weight-bold"></h3>
+                </div>
+                <div th:if="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="text-end mgb-15">
+                    <button type="button" class="btn btn-light border border-primary btn-lg" onclick="addCart()">장바구니 담기</button>
+                    <button type="button" class="btn btn-primary btn-lg" onclick="order()">주문하기</button>
+                </div>
+                <div th:unless="${item.itemSellStatus == T(com.shop.constant.ItemSellStatus).SELL}" class="text-end mgb-15">
+                    <button type="button" class="btn btn-danger btn-lg">품절</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 구분선 -->
+    <hr class="my-4">
+    <div id="calendar" style="margin: 0 auto;"></div>
+    <!-- 상품 상세 설명 -->
+    <div class="mgt-30">
+        <div class="container">
+            <h4 class="border border-success-subtle rounded-pill display-5">상품 상세 설명</h4>
+            <p class="lead" th:text="${item.itemDetail}"></p>
+        </div>
+    </div>
+</div>
+</html>
